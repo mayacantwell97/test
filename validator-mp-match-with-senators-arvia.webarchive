@@ -1,0 +1,340 @@
+bplist00Ñ_WebMainResourceÕ	
+_WebResourceFrameName_WebResourceData_WebResourceMIMEType_WebResourceTextEncodingName^WebResourceURLPOD¬<html><head></head><body><pre style="word-wrap: break-word; white-space: pre-wrap;">// Creates radio buttons when the supporter's postcode returns an array of electorates
+function showMemberChoice(electorateArray) {
+  $('#electorate_message').html("&lt;div class='row'&gt;&lt;div id='electorate_options' class='col-md-12 padbottomless'&gt;&lt;div&gt;Your postcode contains multiple electorates. Please select the correct one:&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;");
+  for(var i = 0; i &lt; electorateArray.length; i++) {
+    var electorate = electorateArray[i];
+    var memberRadioBtn = $('&lt;div class="radio"&gt;&lt;label for="member' + i + '" class=""&gt;&lt;input type="radio" name="memberOption" id="member' + i + '" value="' + electorate + '" /&gt; ' + electorate + ' electorate&lt;/label&gt;&lt;/div&gt;');
+    memberRadioBtn.appendTo('#electorate_options');
+  }
+  $('#electorate_options input').data('required','true');
+  $('#electorate_options input').data('name','Selecting your electorate');
+  $("#electorate_options input").change(function(){
+    var electorate = $("#electorate_options input:checked").val();
+    updateEmail(electorate);
+  });
+}
+// Returns the electorate name, or creates the electorate selection radio buttons
+function getElectorates() {
+  $('#electorate_message').html("");
+  var pcode = $('#campaign_fields_zip').val();
+  var electorates = postcodes[pcode];
+  if(electorates) {
+    electorates = electorates.split(',');
+    $('#postcode_error').hide().text('');
+    if(electorates.length == 1) {
+      updateEmail(electorates[0]);
+      return electorates[0];
+    } else {
+      showMemberChoice(electorates);
+    }
+  } else {
+    $('#destination_address').val('');
+    if(pcode.length == 4) {
+      $('#postcode_error').fadeIn().text('No matching postcodes found');
+    } else if(pcode.length &gt; 4) {
+      $('#postcode_error').fadeIn().text('Oops. That\'s more than 4 digits!');
+    } else if(pcode.length !== 0) {
+      $('#postcode_error').fadeIn().text('Please enter your 4-digit postcode');
+    }
+  }
+}
+
+function updateEmail(electorate) {
+  // var memberName = members[electorate].full_name;
+  var name_components = members[electorate].full_name.split(' '),
+      memberFirst = name_components[0],
+      memberLast = name_components[name_components.length-1],
+      memberName = memberFirst + ' ' +  memberLast,
+      memberEmail = members[electorate].email,
+      memberState = members[electorate].state,
+      postcode = $('#campaign_fields_zip').val();
+  $('#electorate_message').html("We'll send the message below to your local MP " + memberName + " and target Senators");
+  $('#destination_address').val(memberEmail);
+  $('#postcode_error').hide().text('');
+  if(typeof tinyMCE != 'undefined' &amp;&amp; tinymce.activeEditor){
+    if($('#campaign_fields_email_body_ifr')[0] &amp;&amp; $('#campaign_fields_email_body_ifr')[0].contentDocument.getElementById('salutation')){
+      $('#campaign_fields_email_body_ifr')[0].contentDocument.getElementById('salutation').innerHTML = 'Dear ' + memberName + ',';
+      $('#campaign_fields_email_body').val(tinymce.activeEditor.getContent());
+    }
+  }
+  /*if(memberState == "ACT") {
+    $('#bcc_addresses').val("senator.katy.gallagher@aph.gov.au,senator.seselja@aph.gov.au");
+  } else if (memberState == "NSW") {
+    $('#bcc_addresses').val("senator.burston@aph.gov.au,senator.molan@aph.gov.au,senator.cameron@aph.gov.au,senator.fierravanti-wells@aph.gov.au,senator.keneally@aph.gov.au,jennifer.mcallister@aph.gov.au,senator.oneill@aph.gov.au,senator.payne@aph.gov.au,senator.rhiannon@aph.gov.au,senator.sinodinos@aph.gov.au,senator.williams@aph.gov.au");
+  } else if (memberState == "VIC") {
+    $('#bcc_addresses').val("senator.carr@aph.gov.au,senator.collins@aph.gov.au,senator.dinatale@aph.gov.au,senator.fifield@aph.gov.au,senator.hinch@aph.gov.au,senator.hume@aph.gov.au,senator.kitching@aph.gov.au,senator.marshall@aph.gov.au,senator.mckenzie@aph.gov.au,senator.paterson@aph.gov.au,senator.rice@aph.gov.au,senator.ryan@aph.gov.au");
+  } else if (memberState == "QLD") {
+    $('#bcc_addresses').val("senator.anning@aph.gov.au,senator.bartlett@aph.gov.au,senator.canavan@aph.gov.au,senator.chisholm@aph.gov.au,senator.hanson@aph.gov.au,senator.ketter@aph.gov.au,senator.ian.macdonald@aph.gov.au,senator.mcgrath@aph.gov.au,senator.moore@aph.gov.au,senator.o'sullivan@aph.gov.au,senator.stoker@aph.gov.au,senator.watt@aph.gov.au");
+  } else if (memberState == "SA") {
+    $('#bcc_addresses').val("senator.bernardi@aph.gov.au,senator.birmingham@aph.gov.au,senator.farrell@aph.gov.au,senator.fawcett@aph.gov.au,senator.gallacher@aph.gov.au,senator.gichuhi@aph.gov.au,senator.griff@aph.gov.au,senator.hanson-young@aph.gov.au,senator.patrick@aph.gov.au,senator.ruston@aph.gov.au,senator.storer@aph.gov.au,senator.wong@aph.gov.au");
+  } else if (memberState == "WA") {
+    $('#bcc_addresses').val("senator.brockman@aph.gov.au,senator.cash@aph.gov.au,senator.colbeck@aph.gov.au,senator.cormann@aph.gov.au,senator.dodson@aph.gov.au,senator.georgiou@aph.gov.au,senator.lines@aph.gov.au,senator.pratt@aph.gov.au,senator.reynolds@aph.gov.au,senator.siewert@aph.gov.au,senator.smith@aph.gov.au,senator.steele-john@aph.gov.au,senator.sterle@aph.gov.au");
+  } else if (memberState == "TAS") {
+    $('#bcc_addresses').val("senator.abetz@aph.gov.au,senator.bilyk@aph.gov.au,senator.carol.brown@aph.gov.au,senator.bushby@aph.gov.au,senator.duniam@aph.gov.au,senator.martin@aph.gov.au,senator.mckim@aph.gov.au,senator.polley@aph.gov.au,senator.singh@aph.gov.au,senator.urquhart@aph.gov.au,senator.whish-wilson@aph.gov.au");
+  } else if (memberState == "NT") {
+    $('#bcc_addresses').val("senator.mccarthy@aph.gov.au,nigel.scullion@ia.pm.gov.au");
+  }*/
+}
+
+var CampaignNow = {
+  validate: function() {
+    var valid_flag = true;
+    var map_checkboxes = {};
+    var map_radiobuttons = {};
+    $('#errors-list').empty();
+    $("#form-campaign-now *[data-validatable='true']").each(function () {
+      var child = $(this);
+      var required_field = child.data("required");
+      var editable_field = child.data("editable");
+
+      var reg_exp = child.data("regexp");
+      var reg_exp_flags = child.data("regexp-flags");
+      var regex = reg_exp != null &amp;&amp; reg_exp_flags!= null ? new RegExp(reg_exp, reg_exp_flags) : undefined;
+
+      var id = child.attr('id');
+      var value = child.val();
+      var field_name = child.data('name');
+
+      if (required_field != undefined &amp;&amp; editable_field != undefined) {
+        if (required_field &amp;&amp; (value == undefined || (value != undefined &amp;&amp; value.trim() == ''))) {
+          child.addClass('has-error');
+          CampaignNow.addError(field_name + ' is required');
+          valid_flag = false;
+        }
+
+        if (reg_exp != undefined &amp;&amp; !regex.test(value)) {
+          child.addClass('has-error');
+          CampaignNow.addError('Regular expression pattern in ' + field_name + " doesn't match");
+          valid_flag = false;
+        }
+      }
+    });
+
+    $(":input[type=radio],:input[type=checkbox]").each(function () {
+      var child = $(this);
+      var field_type = child.attr('type');
+      var field_name = child.attr('name');
+
+      if (field_type == 'radio') {
+        if (field_name in map_radiobuttons) {
+          map_radiobuttons[field_name] = map_radiobuttons[field_name] + 1;
+        }
+        else {
+          map_radiobuttons[field_name] = 1;
+        }
+      }
+      else if (field_type == 'checkbox') {
+        if (field_name in map_checkboxes) {
+          map_checkboxes[field_name] = map_checkboxes[field_name] + 1;
+        }
+        else {
+          map_checkboxes[field_name] = 1;
+        }
+      }
+    });
+
+    for (var radio_button_name in map_radiobuttons) {
+      var required = $(":input[type=radio][name='" + radio_button_name + "']").first().data("required");
+      var name = $(":input[type=radio][name='" + radio_button_name + "']").first().data("name");
+      var checked = 0;
+      $(":input[type=radio][name='" + radio_button_name + "']").each(function () {
+        var child = $(this);
+        if(child.is(':checked'))
+        {
+          checked++;
+        }
+      });
+      if (required &amp;&amp; checked != 1) {
+        $(":input[type=radio][name='" + radio_button_name + "']").addClass('has-error');
+        CampaignNow.addError(name + ' is required');
+        valid_flag = false;
+      }
+    }
+
+    for (var checkbox_name in map_checkboxes) {
+      var required = $(":input[type=checkbox][name='" + checkbox_name + "']").first().data("required");
+      var name = $(":input[type=checkbox][name='" + checkbox_name + "']").first().data("name");
+      var checked = 0;
+      $(":input[type=checkbox][name='" + checkbox_name + "']").each(function () {
+        var child = $(this);
+        if(child.is(':checked'))
+        {
+          checked++;
+        }
+      });
+      if (required &amp;&amp; checked &lt; 1) {
+        $(":input[type=checkbox][name='" + checkbox_name + "']").addClass('has-error');
+        CampaignNow.addError(name + ' is required');
+        valid_flag = false;
+      }
+    }
+
+    var pcode = $('#campaign_fields_zip').val();
+    var emailTarget = $('#destination_address').val();
+    var electorateOptions = $('#electorate_options input').length;
+    if (pcode.length != 4 || (!emailTarget &amp;&amp; !electorateOptions)) {
+      $('#campaign_fields_zip').addClass('has-error');
+      CampaignNow.addError('Please provide a complete Australian postcode');
+      valid_flag = false;
+    }
+
+    if (valid_flag) {
+      $("#form-campaign-now *[data-validatable='true']").each(function() {
+        $(this).removeClass("has-error");
+      });
+
+      if (typeof grecaptcha != 'undefined' &amp;&amp; !grecaptcha.getResponse()) {
+        grecaptcha.execute();
+      } else {
+        $("#submmit-gif").show();
+        $("#form-campaign-now").submit();
+      }
+    }
+  },
+  addError: function(error_message) {
+    $('#errors-list').append("&lt;li&gt;" + error_message + "&lt;/li&gt;");
+  },
+  checkValidUse: function() {
+    var form = jQuery("#form-campaign-now");
+    if (form.length &gt; 0 &amp;&amp; form.attr("action").indexOf("/test") == -1) {
+      jQuery.ajax({
+        type: 'POST',
+        url: form.attr("action").replace("/submit", "/active_account.json").replace("www.campaignnow.co", "my.campaignnow.co"),
+        dataType: 'json',
+        crossDomain: true,
+        success: function(res) {
+          if (!res.status) {
+            CampaignNow.wrapFormAsInvalid();
+          }
+        },
+        error: function() {
+          // CampaignNow.wrapFormAsInvalid();
+        }
+      });
+    }
+  },
+  wrapFormAsInvalid: function() {
+    var form = jQuery("#form-campaign-now");
+    form.wrap('&lt;div style="position: relative;"&gt;&lt;/div&gt;');
+    form.before('&lt;div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-color: rgba(0, 0, 0, 0.7); cursor: not-allowed; z-index: 10;"&gt;&lt;p style="padding: 10px; font-size: 2em;"&gt;Disabled&lt;/p&gt;&lt;/div&gt;')
+  },
+  bindButtonAction: function() {
+    var btn = $("#form-campaign-now").find("button");
+
+    btn.click(function() {
+      CampaignNow.validate();
+    })
+  },
+  setReferrer: function() {
+    jQuery("#form-campaign-now").find("input[name*='referrer']").attr("value", document.URL);
+  },
+  tinymceInit: function() {
+    var configOptions = {
+      selector: ".tinymce-responsive",
+      height: 260,
+      plugins: "fullscreen paste autosave noneditable advlist lists link autolink code",
+      toolbar1: "bold italic underline bullist numlist link unlink undo redo code",
+      menubar: false,
+      toolbar_items_size: 'small',
+      // statusbar: false,
+      branding: false
+    };
+    tinymce.init(configOptions);
+  },
+  tinymceResponsive: function() {
+    var options = {
+      mode: "specific_textareas",
+      plugins: "fullscreen,paste,autosave,autoresize",
+      theme_advanced_buttons1: "bold,italic,underline,bullist,numlist,|,link,unlink,|,undo,redo",
+      theme_advanced_buttons2: "",
+      theme_advanced_buttons3: "",
+      theme_advanced_buttons4: "",
+      theme_advanced_toolbar_location: "top",
+      theme_advanced_toolbar_align: "left",
+      theme_advanced_statusbar_location: "none",
+      theme_advanced_resizing: !0,
+      theme_advanced_resize_horizontal: !1,
+      theme_advanced_blockformats: "p,div,h1,h2,h3,h4,h5,h6,blockquote,dt,dd,code,samp",
+      fix_list_elements: !0,
+      forced_root_block: "p",
+      convert_urls: !1,
+      relative_urls: !1,
+      gecko_spellcheck: !0,
+      valid_elements: "@[id|align|class|style|title|dir&lt;ltr?rtl|lang|xml::lang],a[rel|rev|charset|hreflang|tabindex|accesskey|type|name|href|target|title|class],strong/b,em/i,strike,u,mark,div,-span,#p,-ol[type|compact],-ul[type|compact],-li,br,-sub,-sup,-blockquote,img[longdesc|usemap|src|border|alt=|title|hspace|vspace|width|height|align],-table[border|cellspacing|cellpadding|width|frame|rules|height|align|summary|bgcolor|background|bordercolor],-tr[rowspan|width|height|align|valign|bgcolor|background|bordercolor],tbody,thead,tfoot,#td[colspan|rowspan|width|height|align|valign|bgcolor|background|bordercolor|scope],#th[colspan|rowspan|width|height|align|valign|scope],-code,-pre,address,-h1,-h2,-h3,-h4,-h5,-h6,hr[size|noshade],-font[face|size|color],caption,dd,dl,dt,cite,abbr,acronym,del[datetime|cite],ins[datetime|cite],map[name],area[shape|coords|href|alt|target],bdo,button,col[align|char|charoff|span|valign|width],colgroup[align|char|charoff|span|valign|width],kbd,label[for],legend,noscript,q[cite],samp,small,tt,var,big",
+      content_css: "/assets/tiny_mce.css",
+      width: "100%"
+    };
+    $('.tinymce-responsive').tinymce(options);
+  },
+  tinymceResponsiveMinimalist: function() {
+    var optionsMinimalist = {
+      mode: "specific_textareas",
+      plugins: "fullscreen,paste,autosave,autoresize",
+      theme_advanced_buttons1: "bold,italic,underline",
+      theme_advanced_buttons2: "",
+      theme_advanced_buttons3: "",
+      theme_advanced_buttons4: "",
+      theme_advanced_toolbar_location: "top",
+      theme_advanced_toolbar_align: "left",
+      theme_advanced_statusbar_location: "none",
+      theme_advanced_resizing: !0,
+      theme_advanced_resize_horizontal: !1,
+      theme_advanced_blockformats: "p,div,h1,h2,h3,h4,h5,h6,blockquote,dt,dd,code,samp",
+      fix_list_elements: !0,
+      forced_root_block: "p",
+      convert_urls: !1,
+      relative_urls: !1,
+      gecko_spellcheck: !0,
+      valid_elements: "@[id|align|class|style|title|dir&lt;ltr?rtl|lang|xml::lang],a[rel|rev|charset|hreflang|tabindex|accesskey|type|name|href|target|title|class],strong/b,em/i,strike,u,mark,div,-span,#p,-ol[type|compact],-ul[type|compact],-li,br,-sub,-sup,-blockquote,img[longdesc|usemap|src|border|alt=|title|hspace|vspace|width|height|align],-table[border|cellspacing|cellpadding|width|frame|rules|height|align|summary|bgcolor|background|bordercolor],-tr[rowspan|width|height|align|valign|bgcolor|background|bordercolor],tbody,thead,tfoot,#td[colspan|rowspan|width|height|align|valign|bgcolor|background|bordercolor|scope],#th[colspan|rowspan|width|height|align|valign|scope],-code,-pre,address,-h1,-h2,-h3,-h4,-h5,-h6,hr[size|noshade],-font[face|size|color],caption,dd,dl,dt,cite,abbr,acronym,del[datetime|cite],ins[datetime|cite],map[name],area[shape|coords|href|alt|target],bdo,button,col[align|char|charoff|span|valign|width],colgroup[align|char|charoff|span|valign|width],kbd,label[for],legend,noscript,q[cite],samp,small,tt,var,big",
+      content_css: "/assets/tiny_mce.css",
+      width: "100%"
+    };
+    $('.tinymce-responsive-minimalist').tinymce(optionsMinimalist);
+  }
+};
+
+jQuery(window).ready(function() {
+  // support older versions of jQuery
+  if(typeof $ == "undefined" &amp;&amp; typeof jQuery == "function"){
+    window.jQuery = window.$ = jQuery
+  }
+
+  // Add a '#postcode_error' and '#electorate_message' div to the page
+  $('#campaign_fields_zip').closest('.row,.row-fluid').after('&lt;div class="row row-fluid"&gt;&lt;div class="col-md-12"&gt;&lt;div id="postcode_error"&gt;&lt;/div&gt;&lt;div id="electorate_message"&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;');
+  // Validate postcode on page load (in case user is recognised by NB and has a postcode saved)
+  getElectorates();
+  $('#campaign_fields_zip,[data-name="Postcode"],[data-name="ZIP Code"]').on('change keyup', function(){
+    getElectorates();
+  });
+
+  // Automatically append the supporter's name to the end of the email body
+  function appendSupporterName() {
+    var fName = $('#campaign_fields_first_name').val(),
+        lName = $('#campaign_fields_last_name').val(),
+        supporterName = [fName, lName].filter(Boolean).join(" ");
+    if(typeof tinyMCE != 'undefined' &amp;&amp; tinymce.activeEditor){
+      $('#campaign_fields_email_body_ifr')[0].contentDocument.getElementById('sign_off').innerHTML = 'Yours sincerely, &lt;br /&gt;' + supporterName;
+      $('#campaign_fields_email_body').val(tinymce.activeEditor.getContent());
+    }
+  }
+  $('#campaign_fields_first_name,#campaign_fields_last_name').on('change',function(){
+    if(typeof tinyMCE != 'undefined' &amp;&amp; tinymce.activeEditor){
+      appendSupporterName();
+    }
+  });
+});
+
+jQuery(window).ready(function() {
+  CampaignNow.setReferrer();
+  CampaignNow.checkValidUse();
+  CampaignNow.bindButtonAction();
+});
+jQuery(window).on('load', function() {
+  if(typeof tinyMCE != 'undefined') {
+    CampaignNow.tinymceInit();
+  } else if ($.fn.tinymce) {
+    CampaignNow.tinymceResponsive();
+    CampaignNow.tinymceResponsiveMinimalist();
+  }
+});</pre></body></html>_application/javascriptUUTF-8_Dhttps://cdn.campaignnow.co/validator-mp-match-with-senators-arvia.js    ( ? Q g … ” •EEE^Ed                           E«
